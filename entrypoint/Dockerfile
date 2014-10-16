@@ -21,7 +21,7 @@ RUN apt-get -y update &&\
 RUN ln /usr/bin/nodejs /usr/bin/node
 
 # Node.js will be on port 9000
-EXPOSE 9000
+EXPOSE 3000
 
 # Here's were our stuff happens
 RUN mkdir /var/www

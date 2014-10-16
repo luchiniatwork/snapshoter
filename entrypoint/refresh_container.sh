@@ -10,7 +10,7 @@ echo "Running new container"
 docker run \
   --name entrypoint \
   --link redis:redis \
-  -p 9000:9000 \
+  -p 3000:3000 \
   -d \
   entrypoint \
   node src/index.js
