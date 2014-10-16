@@ -6,38 +6,38 @@ var childProcess = require('child_process')
 var phantomjs = require('phantomjs')
 var binPath = phantomjs.path
 
-app.get('/', function (req, res) {
-  res.send('Hello World!')
-});
-
 app.route('/snapshots').get(function (req, res, next) {
-  console.log(JSON.stringify(req.query, null, 2));
+  console.log('------------');
+  console.log('Request to', req.path, 'from', req.ip);
+  console.log('parsed query', JSON.stringify(req.query, null, 2));
+
   var childArgs = [
     '--ignore-ssl-errors=true',
     '--ssl-protocol=any',
-    path.join(__dirname, 'script.js'),
-    'https://www.virginamerica.com/' + req.query.fragment
-  ]
+    path.join(__dirname, 'phantom_script.js'),
+    [
+      'https://www.virginamerica.com',
+      req.query.fragment
+    ].join('/')
+  ];
 
-  // console.log('childArgs is', JSON.stringify(childArgs, null, 2));
-  // console.log('Triggering phantomjs');
-
+  console.log('Triggering phantomjs');
   childProcess.execFile(binPath, childArgs, function(err, stdout, stderr) {
+
     console.log('Got response');
 
-    console.log('stdout', stdout);
-    console.log('stderr', stderr);
+    console.log('---stdout---', stdout);
+    console.log('---stderr---', stderr);
 
     var options = {
-        root: __dirname + '/',
-        dotfiles: 'deny',
-        headers: {
-            'x-timestamp': Date.now(),
-            'x-sent': true
-        }
-      };
+      root: __dirname + '/',
+      dotfiles: 'deny',
+      headers: {
+        'x-timestamp': Date.now(),
+        'x-sent': true
+      }
+    };
 
-      console.log(options.root);
     res.sendFile('output.png', options);
   });
 });

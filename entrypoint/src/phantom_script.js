@@ -1,16 +1,27 @@
 var system = require('system');
+var fs = require('fs');
+
 var args = system.args;
-if (args.length === 1) {
-  console.log('Syntax: script.js <url>');
+if (args.length !== 3) {
+  console.log('Syntax: phantom_script.js <url> <output_path>');
   phantom.exit(1);
 }
 var url = args[1];
-console.log(url);
+var outPath = args[2];
+
+console.log('Fetching', url);
+
+var uuid = generateUUID();
+var thumbPath   = [ outPath, uuid ].join('/') + '.png';
+var contentPath = [ outPath, uuid ].join('/') + '.html';
+
 var page = require('webpage').create();
 
-console.log('script.js starting');
+page.viewportSize = {
+  width: 1180,
+  height: 800
+};
 
-page.viewportSize = { width: 1180, height: 800 };
 page.settings = {
   XSSAuditingEnabled: false,
   javascriptCanCloseWindows: true,
@@ -31,19 +42,15 @@ page.onResourceError = function(error) {
 
 page.onResourceTimeout = function(request) {
   console.log('Response (#' + request.id + '): ' + JSON.stringify(request));
-  page.render('src/output.png');
-  
-  // var content = page.content;
-  // console.log('Content: ' + content);
-  
+  console.log(uuid);
+  page.render(thumbPath);
+  fs.write(contentPath, page.content, 'w');
   phantom.exit(0);
 };
 
-// page.open('https://www.virginamerica.com/cms/airport-destinations', function(status) {
 page.open(url, function(status) {
   
   console.log('getting status', status);
-  // phantom.exit();
   
   if (status !== 'success') {
     console.log('script.js Unable to load the address!');
@@ -51,8 +58,17 @@ page.open(url, function(status) {
     phantom.exit(1);
   } else {
     window.setTimeout(function () {
-      page.render('src/output.png');
+      console.log(uuid);
+      page.render(thumbPath);
+      fs.write(contentPath, page.content, 'w');
       phantom.exit();
     }, 200);
   }
 });
+
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+  });
+}
