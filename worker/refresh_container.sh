@@ -1,18 +1,17 @@
 #!/bin/bash
 
-echo "Refreshing entrypoint container"
+echo "Refreshing worker container"
 
 echo "- stopping any running container"
-docker stop entrypoint
+docker stop worker
 
 echo "- removing any running container"
-docker rm entrypoint
+docker rm worker
 
 echo "- running new container"
 docker run \
-  --name entrypoint \
+  --name worker \
   --link redis:redis \
-  -p 3000:3000 \
   -d \
-  entrypoint \
-  node src/index.js
+  worker \
+  node src/worker.js

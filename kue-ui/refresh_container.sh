@@ -1,18 +1,18 @@
 #!/bin/bash
 
-echo "Refreshing entrypoint container"
+echo "Refreshing kue-ui container"
 
 echo "- stopping any running container"
-docker stop entrypoint
+docker stop kue-ui
 
 echo "- removing any running container"
-docker rm entrypoint
+docker rm kue-ui
 
 echo "- running new container"
 docker run \
-  --name entrypoint \
+  --name kue-ui \
   --link redis:redis \
-  -p 3000:3000 \
+  -p 3001:3000 \
   -d \
-  entrypoint \
+  kue-ui \
   node src/index.js
