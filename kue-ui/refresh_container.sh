@@ -13,6 +13,7 @@ docker run \
   --name kue-ui \
   --link redis:redis \
   -p 3001:3000 \
+  -e KUE_USERNAME=admin \
+  -e KUE_PASSWORD=mypass \
   -d \
-  kue-ui \
-  node src/index.js
+  kue-ui

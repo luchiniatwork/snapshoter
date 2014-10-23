@@ -13,5 +13,4 @@ docker run \
   --name redis \
   -P \
   -d \
-  redis \
-  redis-server /home/redis/redis.conf
+  redis

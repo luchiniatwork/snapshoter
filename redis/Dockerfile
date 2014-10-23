@@ -16,7 +16,8 @@ RUN apt-get -y update &&\
 EXPOSE 6379
 
 ADD redis.conf /home/redis/
+RUN chown -R redis:redis /home/redis
 
 USER redis
 
-# CMD ["redis-server", "/home/redis/redis.conf"]
+CMD ["redis-server", "/home/redis/redis.conf"]

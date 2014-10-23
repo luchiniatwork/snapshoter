@@ -9,6 +9,8 @@
   "author": "Tiago Luchini <luchini@work.co>",
   "license": "ISC",
   "dependencies": {
+    "basic-auth": "^1.0.0",
+    "express": "^4.9.7",
     "kue": "^0.8.9"
   }
 }

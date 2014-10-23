@@ -1,10 +1,35 @@
-var express      = require('express'),
-    app          = express();
+var express = require('express'),
+    app     = express(),
+    kue     = require('kue');
+
+var jobs = kue.createQueue({
+  prefix: 'q',
+  redis: {
+    port: process.env.REDIS_PORT_6379_TCP_PORT,
+    host: process.env.REDIS_PORT_6379_TCP_ADDR,
+    options: {
+    }
+  }
+});
 
 app.route('/').get(function (req, res, next) {
   console.log('Request to', req.path, 'from', req.ip);
   console.log('- parsed query', JSON.stringify(req.query, null, 2));
-  res.send('Hello World!');
+  
+  var job = jobs.create('snapshot', {
+      title: 'welcome email for tl'
+    , to: 'tl@learnboost.com'
+    , template: 'welcome-email'
+  }).save ( function (err) {
+     if (!err) {
+       console.log('perfect', job.id);
+     } else {
+       console.log('there was an error:', err);
+     };
+  });
+  
+  res.send('Hello World! Job Id ' + job.id);
+  
 });
 
 // app.route('/snapshots').get(function (req, res, next) {

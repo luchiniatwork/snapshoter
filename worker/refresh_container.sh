@@ -13,5 +13,4 @@ docker run \
   --name worker \
   --link redis:redis \
   -d \
-  worker \
-  node src/worker.js
+  worker

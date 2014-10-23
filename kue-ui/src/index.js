@@ -1,5 +1,8 @@
-var kue = require('kue');
+var express   = require('express'),
+    basicAuth = require('basic-auth'),
+    kue       = require('kue');
 
+// Initializes Queue 
 var jobs = kue.createQueue({
   prefix: 'q',
   redis: {
@@ -10,50 +13,39 @@ var jobs = kue.createQueue({
   }
 });
 
-var server = kue.app.listen(3000, function () {
+// Establishes Authentication Strategy
+var auth = function (req, res, next) {
+  function unauthorized(res) {
+    res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+    return res.send(401);
+  };
+
+  var user = basicAuth(req);
+
+  if (!user || !user.name || !user.pass) {
+    return unauthorized(res);
+  };
+
+  if (
+    user.name === (process.env.KUE_USERNAME || 'admin') && 
+    user.pass === (process.env.KUE_PASSWORD || 'password')
+  ) {
+    return next();
+  } else {
+    return unauthorized(res);
+  };
+};
+
+// Express app
+var app = express();
+
+// Express middlewares
+app.use(auth);
+app.use(kue.app);
+
+// Kick express up
+var server = app.listen(3000, function () {
   var host = server.address().address
   var port = server.address().port
   console.log('kue-ui server listening at http://%s:%s', host, port)
 });
-
-// app.route('/snapshots').get(function (req, res, next) {
-//   console.log('------------');
-//   console.log('Request to', req.path, 'from', req.ip);
-//   console.log('parsed query', JSON.stringify(req.query, null, 2));
-//
-//   var childArgs = [
-//     '--ignore-ssl-errors=true',
-//     '--ssl-protocol=any',
-//     path.join(__dirname, 'phantom_script.js'),
-//     [
-//       'https://www.virginamerica.com',
-//       req.query.fragment
-//     ].join('/')
-//   ];
-//
-//   console.log('Triggering phantomjs');
-//   childProcess.execFile(binPath, childArgs, function(err, stdout, stderr) {
-//
-//     console.log('Got response');
-//
-//     console.log('---stdout---', stdout);
-//     console.log('---stderr---', stderr);
-//
-//     var options = {
-//       root: __dirname + '/',
-//       dotfiles: 'deny',
-//       headers: {
-//         'x-timestamp': Date.now(),
-//         'x-sent': true
-//       }
-//     };
-//
-//     res.sendFile('output.png', options);
-//   });
-// });
-//
-// var server = app.listen(3000, function () {
-//   var host = server.address().address
-//   var port = server.address().port
-//   console.log('Server listening at http://%s:%s', host, port)
-// });

@@ -14,5 +14,4 @@ docker run \
   --link redis:redis \
   -p 3000:3000 \
   -d \
-  entrypoint \
-  node src/index.js
+  entrypoint
