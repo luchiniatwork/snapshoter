@@ -1,16 +1,16 @@
 #!/bin/bash
 
-echo "Refreshing worker container"
+echo "Refreshing snapshot-redis container"
 
 echo "- stopping any running container"
-docker stop worker
+docker stop snapshot-redis
 
 echo "- removing any running container"
-docker rm worker
+docker rm snapshot-redis
 
 echo "- running new container"
 docker run \
-  --name worker \
-  --link redis:redis \
+  --name snapshot-redis \
+  -P \
   -d \
-  worker
+  snapshot-redis

@@ -9,5 +9,5 @@ do
   esac
 done
 
-echo "Building kue-ui container" 
-docker build -t kue-ui $path.
+echo "Building snapshot-kue-ui image" 
+docker build -t snapshot-kue-ui $path.

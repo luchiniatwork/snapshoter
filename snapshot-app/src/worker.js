@@ -6,6 +6,7 @@ var kue          = require('kue'),
 var binPath = phantomjs.path;
 
 console.log('Waiting for jobs');
+
 var jobs = kue.createQueue({
   prefix: 'q',
   redis: {
@@ -15,6 +16,7 @@ var jobs = kue.createQueue({
     }
   }
 });
+
 jobs.process('snapshot', function(job, done){
   // email(job.data.to, done);
   console.log('Processing job');

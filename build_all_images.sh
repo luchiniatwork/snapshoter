@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for container in 'redis' 'entrypoint' 'kue-ui' 'worker'
+for dockerPath in 'snapshot-redis' 'snapshot-app' 'snapshot-kue-ui'
 do
-    $container/build_image.sh -p $container
+    $dockerPath/build_image.sh -p $dockerPath
 done

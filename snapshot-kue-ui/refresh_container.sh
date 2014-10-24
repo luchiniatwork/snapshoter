@@ -1,19 +1,19 @@
 #!/bin/bash
 
-echo "Refreshing kue-ui container"
+echo "Refreshing snapshot-kue-ui container"
 
 echo "- stopping any running container"
-docker stop kue-ui
+docker stop snapshot-kue-ui
 
 echo "- removing any running container"
-docker rm kue-ui
+docker rm snapshot-kue-ui
 
 echo "- running new container"
 docker run \
-  --name kue-ui \
-  --link redis:redis \
+  --name snapshot-kue-ui \
+  --link snapshot-redis:redis \
   -p 3001:3000 \
   -e KUE_USERNAME=admin \
   -e KUE_PASSWORD=mypass \
   -d \
-  kue-ui
+  snapshot-kue-ui

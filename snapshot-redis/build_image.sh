@@ -9,5 +9,5 @@ do
   esac
 done
 
-echo "Building redis container" 
-docker build -t redis $path.
+echo "Building redis image" 
+docker build -t snapshot-redis $path.

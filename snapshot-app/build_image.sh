@@ -9,5 +9,5 @@ do
   esac
 done
 
-echo "Building worker container" 
-docker build -t worker $path.
+echo "Building snapshot-app image" 
+docker build -t snapshot-app $path.
