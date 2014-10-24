@@ -90,9 +90,69 @@ needs:
 4. Updates cached snapshots on a queued manner
 5. Offers queue management facilities 
 
-The following diagram represents the architectural components of Snapthoter:
+The following diagram represents the architectural components of Snapshoter:
 
 ![Architectural Diagram](https://raw.githubusercontent.com/luchiniatwork/snapshoter/master/docs/images/architectural-diagram.png)
+
+The next session describes each architectural component in details.
+
+Components Described
+--------------------
+
+**Your own HTTP Server(s)**
+
+These servers must be set up to mod_redirect and context switch when the
+`_escaped_fragment_` URL is identified. These requests must be processed by
+the Snapshoter's HTTP Entrypoint.
+
+I.e., considering that Virgin America's website is using the fragment meta tag
+method, the following URL:
+
+    https://www.virginamerica.com/book/ow/a1/nyc_sfo
+
+will be converted by crawlers to:
+
+    https://www.virginamerica.com/?_escaped_fragment_=book%2Fow%2Fa1%2Fnyc_sfo
+
+Your HTTP must detect this request and encapsulate (not redirect) a request to
+your Snapshoter's HTTP Entrypoint installation (i.e. residing at
+`snapshoter.example.com`):
+
+    http://snapshoter.example.com/snapshots?fragment=book%2Fow%2Fa1%2Fnyc_sfo
+
+More details about how to set up your domain on the settings section below.
+
+
+**Snapshoter's HTTP Entrypoint**
+
+Snapshoter's HTTP Entrypoint is the main component of Snapshoter. It servers as
+a HTTP faced to the outside world and orchestrates most of the logic for
+taking snapshots of dynamic websites.
+
+It takes in URLs such as:
+
+    http://snapshoter.example.com/snapshots?fragment=book%2Fow%2Fa1%2Fnyc_sfo
+
+This entrypoint will check whether there's a cached version of this snapshot,
+if not, it will dynamically generate the snapshot and save it for later use.
+
+
+**Redis**
+
+Snapshoter uses Redis for its cache as well as for controlling the queue of
+cache updates.
+
+
+**Queue Worker**
+
+A queue worker is a process (or server) that will go through queued up cache
+update jobs and update them accordingly.
+
+
+**Queue UI**
+
+In order to manage the queue, an optional queue management UI is offered as part
+of Snapshoter's package.
 
 
 Setting up Redis (snapshot-redis)
