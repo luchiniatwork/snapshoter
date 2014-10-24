@@ -13,7 +13,8 @@ docker run \
   --name snapshot-app \
   --link snapshot-redis:redis \
   -p 3000:3000 \
-  -e CACHE_LIFETIME=5000 \
+  -e CACHE_LIFETIME=300000 \
+  -e BASE_URL=https://www.virginamerica.com/ \
   -d \
   snapshot-app
 
