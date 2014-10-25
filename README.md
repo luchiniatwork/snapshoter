@@ -158,8 +158,66 @@ of Snapshoter's package.
 Setting up Redis (snapshot-redis)
 ---------------------------------
 
-Setting up Main App (snapshot-app)
-----------------------------------
+A vanilla Redis server is required by snapshoter. A sample [redis.conf](https://github.com/luchiniatwork/snapshoter/blob/master/snapshot-redis/redis.conf)
+is provided for reference.
+
+All sample Redis files are found on
+[snapshot-redis](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-redis).
+
+If you use [Docker](https://www.docker.com/) a Dockerfile is provided.
+
+
+Setting up the HTTP Entrypoint (snapshot-app)
+---------------------------------------------
+
+Snapshoter's HTTP entrypoint is a [NodeJS](http://nodejs.org/) app.
+
+Make sure you have NodeJS and npm installed. See [http://nodejs.org/](http://nodejs.org/).
+
+Other dependencies may apply depending on your setup. Refer to the [Dockerfile](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-app/Dockerfile) for details.
+
+A Dockerfile is provided in [snapshot-app](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-app).
+
+The server runs on port 3000 so make sure to remap your ports when running the
+container or the process on the server.
+
+The triggering command is:
+
+    node src/index.js
+
+Before running the server, set up the following environment variables:
+
+    export CACHE_LIFETIME=300000
+    export BASE_URL=https://www.virginamerica.com/
+
+`CACHE_LIFETIME` is the maximum allowed age (in miliseconds) of the cached
+snapshot (i.e. 300000 equals 5 minutes). `BASE_URL` is the base URL that will
+preface all requests to the dynamic portion of the webserver.
+
+If you are using [Docker](https://www.docker.com/), this container will need to
+be linked to the Redis container under the alias `redis` such as:
+
+    docker run \
+      --name snapshot-app \
+      --link snapshot-redis:redis \
+      -p 3000:3000 \
+      -e CACHE_LIFETIME=300000 \
+      -e BASE_URL=https://www.virginamerica.com/ \
+      -d \
+      snapshot-app
+
+If you are not using Docker, then make sure to specify the following
+environment variables:
+
+    export REDIS_PORT_6379_TCP_PORT=49161
+    export REDIS_PORT_6379_TCP_ADDR=192.168.59.103
+
+Where `REDIS_PORT_6379_TCP_ADDR` should point to the IP address of your Redis
+instance and `REDIS_PORT_6379_TCP_PORT` should point to the IP port of your
+Redis instance.
+
+For further questions, refer to the respective Dockerfile.
+
 
 Setting up Worker (snapshot-worker)
 -----------------------------------
