@@ -158,25 +158,48 @@ of Snapshoter's package.
 Setting up Redis (snapshot-redis)
 ---------------------------------
 
-A vanilla Redis server is required by snapshoter. A sample [redis.conf](https://github.com/luchiniatwork/snapshoter/blob/master/snapshot-redis/redis.conf)
+A vanilla Redis server is required by Snapshoter. A sample [redis.conf](https://github.com/luchiniatwork/snapshoter/blob/master/snapshot-redis/redis.conf)
 is provided for reference.
 
 All sample Redis files are found on
 [snapshot-redis](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-redis).
 
-If you use [Docker](https://www.docker.com/) a Dockerfile is provided.
+If you use [Docker](https://www.docker.com/), a Dockerfile is provided in the
+[snapshot-redis](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-redis) folder. The `build_image.sh` script trigers a named image build and
+`refresh_container.sh` stops, deletes, recreates and runs a container out of it.
+
+You should also refer to the Dockerfile in terms of dependencies.
 
 
 Setting up the HTTP Entrypoint (snapshot-app)
 ---------------------------------------------
 
-Snapshoter's HTTP entrypoint is a [NodeJS](http://nodejs.org/) app.
+Snapshoter's HTTP entrypoint is a [Node.js](http://nodejs.org/) app.
 
-Make sure you have NodeJS and npm installed. See [http://nodejs.org/](http://nodejs.org/).
+Make sure you have Node.js and npm installed. Refer to [http://nodejs.org/](http://nodejs.org/) for specifc details for your target
+environment.
 
-Other dependencies may apply depending on your setup. Refer to the [Dockerfile](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-app/Dockerfile) for details.
+If you use [Docker](https://www.docker.com/), a Dockerfile is provided in the
+[snapshot-app](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-app) folder. The `build_image.sh` script trigers a named image build and
+`refresh_container.sh` stops, deletes, recreates and runs a container out of it.
 
-A Dockerfile is provided in [snapshot-app](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-app).
+Other dependencies may also apply depending on your setup. Refer to the [Dockerfile](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-app/Dockerfile) for details.
+
+For Debian Jessie, for instance, you may need to run the following:
+
+    $ apt-get -y update && \
+        apt-get install -y \
+        libfreetype6 \
+        libfontconfig \
+        nodejs \
+        npm \
+        git
+
+**IMPORTANT**: some Linux distributions (such as Debian Jessie) have Node.js'
+binary as `nodejs`. This is incompatible with Snapshoter. If that's your case,
+make sure to symlink it with:
+
+    sudo ln /usr/bin/nodejs /usr/bin/node
 
 The server runs on port 3000 so make sure to remap your ports when running the
 container or the process on the server.
@@ -206,6 +229,12 @@ be linked to the Redis container under the alias `redis` such as:
       -d \
       snapshot-app
 
+Notice the `--link snapshot-redis:redis`. This will link this container with the
+redis one.
+
+Also notice the port mapping on 3000. Remember to set this up according to your
+environment.
+
 If you are not using Docker, then make sure to specify the following
 environment variables:
 
@@ -216,17 +245,168 @@ Where `REDIS_PORT_6379_TCP_ADDR` should point to the IP address of your Redis
 instance and `REDIS_PORT_6379_TCP_PORT` should point to the IP port of your
 Redis instance.
 
+Make sure to have all Node.js dependencies sorted before running the
+triggering point process:
+
+    npm install
+
 For further questions, refer to the respective Dockerfile.
 
 
 Setting up Worker (snapshot-worker)
 -----------------------------------
 
+The worker is another instance of the main Snapshoter app but with another
+script to be spawned:
+
+    node src/worker.js
+
+In practice, the worker has the same requirements as the HTTP entrypoint in
+terms of Linux system and dependencies but can be started with no need for the
+environment variables.
+
+If you use [Docker](https://www.docker.com/), a Dockerfile is provided in the
+[snapshot-worker](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-worker) folder. The `build_image.sh` script trigers a named image build and
+`refresh_container.sh` stops, deletes, recreates and runs a container out of it.
+
+Other dependencies may also apply depending on your setup. Refer to the [Dockerfile](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-worker/Dockerfile) for details.
+
+For Debian Jessie, for instance, you may need to run the following:
+
+    $ apt-get -y update && \
+        apt-get install -y \
+        libfreetype6 \
+        libfontconfig \
+        nodejs \
+        npm \
+        git
+
+**IMPORTANT**: some Linux distributions (such as Debian Jessie) have Node.js'
+binary as `nodejs`. This is incompatible with Snapshoter. If that's your case,
+make sure to symlink it with:
+
+Before running the server, set up the following environment variables:
+
+    export CACHE_LIFETIME=300000
+    export BASE_URL=https://www.virginamerica.com/
+
+`CACHE_LIFETIME` is the maximum allowed age (in miliseconds) of the cached
+snapshot (i.e. 300000 equals 5 minutes). `BASE_URL` is the base URL that will
+preface all requests to the dynamic portion of the webserver.
+
+If you are using the provided Dockerfile, you'll be able to start the container
+by:
+
+    docker run \
+      --name snapshot-worker \
+      --link snapshot-redis:redis \
+      -d \
+      snapshot-app \
+      node src/worker.js
+
+Notice the `--link snapshot-redis:redis`. This will link this container with the
+redis one.
+
+If you are not using Docker, then make sure to specify the following
+environment variables:
+
+    export REDIS_PORT_6379_TCP_PORT=49161
+    export REDIS_PORT_6379_TCP_ADDR=192.168.59.103
+
+Where `REDIS_PORT_6379_TCP_ADDR` should point to the IP address of your Redis
+instance and `REDIS_PORT_6379_TCP_PORT` should point to the IP port of your
+Redis instance.
+
+Make sure to have all Node.js dependencies sorted before running the
+triggering point process:
+
+    npm install
+
+For further questions, refer to the respective Dockerfile.
+
+
 Setting up Queue UI (snapshot-kue-ui)
 -------------------------------------
+
+The Queue UI is a [Node.js](http://nodejs.org/) app.
+
+Make sure you have Node.js and npm installed. Refer to [http://nodejs.org/](http://nodejs.org/) for specifc details for your target
+environment.
+
+If you use [Docker](https://www.docker.com/), a Dockerfile is provided in the
+[snapshot-kue-ui](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-kue-ui) folder. The `build_image.sh` script trigers a named image build and
+`refresh_container.sh` stops, deletes, recreates and runs a container out of it.
+
+Other dependencies may also apply depending on your setup. Refer to the [Dockerfile](https://github.com/luchiniatwork/snapshoter/tree/master/snapshot-kue-ui/Dockerfile) for details.
+
+For Debian Jessie, for instance, you may need to run the following:
+
+    $ apt-get -y update && \
+        apt-get install -y \
+        nodejs \
+        npm \
+        git
+
+**IMPORTANT**: some Linux distributions (such as Debian Jessie) have Node.js'
+binary as `nodejs`. This is incompatible with Snapshoter. If that's your case,
+make sure to symlink it with:
+
+    sudo ln /usr/bin/nodejs /usr/bin/node
+
+The server runs on port 3000 so make sure to remap your ports when running the
+container or the process on the server.
+
+The triggering command is:
+
+    node src/index.js
+
+Before running the server, set up the following environment variables:
+
+    export KUE_USERNAME=admin
+    export KUE_PASSWORD=password
+
+`KUE_USERNAME` is the username that will be used by the UI to authenticate
+users. `KUE_PASSWORD` is the password that will be used by the UI to
+authenticate users.
+
+If you are using [Docker](https://www.docker.com/), this container will need to
+be linked to the Redis container under the alias `redis` such as:
+
+    docker run \
+      --name snapshot-kue-ui \
+      --link snapshot-redis:redis \
+      -p 3001:3000 \
+      -e KUE_USERNAME=admin \
+      -e KUE_PASSWORD=password \
+      -d \
+      snapshot-kue-ui
+
+Notice the `--link snapshot-redis:redis`. This will link this container with the
+redis one.
+
+Also notice the port mapping on 3000. Remember to set this up according to your
+environment.
+
+If you are not using Docker, then make sure to specify the following
+environment variables:
+
+    export REDIS_PORT_6379_TCP_PORT=49161
+    export REDIS_PORT_6379_TCP_ADDR=192.168.59.103
+
+Where `REDIS_PORT_6379_TCP_ADDR` should point to the IP address of your Redis
+instance and `REDIS_PORT_6379_TCP_PORT` should point to the IP port of your
+Redis instance.
+
+Make sure to have all Node.js dependencies sorted before running the
+triggering point process:
+
+    npm install
+
+For further questions, refer to the respective Dockerfile.
+
 
 Setting up your Domain (mod_redirect)
 -------------------------------------
 
-Testing Installation
---------------------
+Testing your Installation
+-------------------------
