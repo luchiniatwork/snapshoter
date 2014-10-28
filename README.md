@@ -405,8 +405,88 @@ triggering point process:
 For further questions, refer to the respective Dockerfile.
 
 
-Setting up your Domain (mod_redirect)
--------------------------------------
+Setting up your Domain (i.e. mod_redirect)
+------------------------------------------
+
+Your server will have to redirect those requests identified as coming from
+crawlers to Snapshoter.
+
+The way to achieve this in Apache is to use Apache's `mod_redirect` module.
+
+You can set the rewrite rules either in the virtualhost configuration for the
+site or the `.htaccess` file that sits at the root of the server directory.
+
+Here is an example of how to configure this using Apache's `mod_redirect`:
+
+    RewriteEngine On
+    Options +FollowSymLinks
+    RewriteCond %{REQUEST_URI}  ^/$
+    RewriteCond %{QUERY_STRING} ^_escaped_fragment_=/?(.*)$
+    RewriteRule ^(.*)$ /snapshots/?fragment=%1? [NC,L]
+
+Prior to that you may need to enable the appropriate modules:
+
+    $ a2enmod proxy
+    $ a2enmod proxy_http
+
+You may also need to restart Apache:
+
+    $ sudo /etc/init.d/apache2 reload
+
+If you are using nginx to serve your webise, you can add some configuration to
+serve Snapshoter's snapshots if there is an `_escaped_fragment_` parameter in
+the query strings.
+
+Unlike Apache, nginx does not require us to enable a module, so you can simply
+update your configuration to replace the path with the question file instead.
+
+In your nginx configuration file (For instance, `/etc/nginx/nginx.conf`),
+ensure your configuration follows this example:
+
+    server {
+      listen 80;
+      server_name example;
+
+      if ($args ~ "_escaped_fragment_=/?(.+)") {
+        set $path $1;
+        rewrite ^ /snapshots/?fragment=$path last;
+      }
+
+      location / {
+        root /web/example/current/;
+        # Comment out if using hash urls
+        if (!-e $request_filename) {
+          rewrite ^(.*)$ /index.html break;
+        }
+        index index.html;
+      }
+    }
+
+Both configurations will rewrite escaped fragment requests such as:
+
+    http://www.example.com/?_escaped_fragment_=book%2Fow%2Fa1%2Fnyc_sfo
+
+to:
+
+    http://www.example.com/snapshots/?fragment=book%2Fow%2Fa1%2Fnyc_sfo
+
+The only thing left at the HTTP server side is deal with context
+switching/mapping in order to get the `/snapshots` mapped to the port where
+Snapshoter is connected to (refer to your Akamai, AWS or any other hosting
+vendor for environment-specific directions on how to achieve this).
+
 
 Testing your Installation
 -------------------------
+
+Your installation can be tested by following the steps below:
+
+1. Keep a console out open on `snapshots-app` main HTTP process/container
+2. Keep a console out open on `snapshots-worker` process/container
+3. Create a valid URL to your domain and convert it manually to escaped fragment
+   according to the spec
+4. You should see `snapshots-app` consoling out the request and indicating its
+   response strategy
+5. Keep refreshing the page to see the cached response
+6. Make sure that a queued job is trigered when your specified cache age expires
+7. Then check `snapshots-worker`'s console to see the cache being updated
