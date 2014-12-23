@@ -476,6 +476,52 @@ Snapshoter is connected to (refer to your Akamai, AWS or any other hosting
 vendor for environment-specific directions on how to achieve this).
 
 
+Advanced Settings
+-----------------
+
+There are cases when the static pages may need some extra treatment before being
+sent to crawlers. Take title, meta or canonical links for example: if you are
+generating static snapshots of a single-page app, chances are these will all be
+the same. However, this is not what you want to send to crawlers for SEO
+purposes.
+
+If a file called `processor-data.js` is found in the `snapshot-app/src` path,
+then Snapshotter will read load up a post-processor tool and set it up with the
+contents of `processor-data.js`. This file must follow the following structure:
+
+    module.exports = function (processor) {
+      processor
+        .global(function ($, path, meta) {
+          $('link[rel=canonical]').attr('href','http://www.virginamerica.com' + path);
+        })
+        .when(/^\/book/, function ($, path, meta) {
+          $('title').text(
+            'Book Flights,Hotels,Car Rentals &amp; More | Virgin America'
+          );
+          $('meta[name=description]').attr(
+            'content',
+            [
+              'Book your next flight,hotel or vacation package with Virgin America. ',
+              'Find low-fare plane tickets or bundle your reservation with a car ',
+              'rental to save even more.'
+            ].join('')
+          );
+        });
+    };
+
+What is happening here? Check this out:
+
+1. The `global` directive will be triggered for all requests
+2. In this case, the function handler changes the canonical link to something more dynamic
+3. Each handler function gets three parameters (`$`, `path` and `meta`)
+4. `$` is a parsed DOM version of the HTML. It is parsed using `cheerio` and support its simplified selectors (see more at [Cheerio's website](http://cheeriojs.github.io/cheerio/)
+5. `path` is the path of the orginal fragment that triggered this snapshot
+6. `meta` is the `request` object from `expressjs`. It can be used to empower the HTML any way you see fit
+7. The `when` directive takes a `regex` as its first argument before the handler function
+8. Each request is matched against the `regex` of the `when` directives and if matched, the handler function is called
+9. Multiple `when` directives may be used
+10. The example above changes the title tag and the meta description tag when the path is `/book` followed by anything
+
 Testing your Installation
 -------------------------
 

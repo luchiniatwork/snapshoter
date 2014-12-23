@@ -1,7 +1,9 @@
-var express  = require('express'),
-    app      = express(),
-    kue      = require('kue'),
-    extruder = require('./lib/extruder');
+var express   = require('express'),
+    app       = express(),
+    fs        = require('fs'),
+    kue       = require('kue'),
+    extruder  = require('./lib/extruder'),
+    processor = require('./lib/processor');
 
 var CACHE_LIFETIME = process.env.CACHE_LIFETIME || 5*60*1000,
     BASE_URL = process.env.BASE_URL || 'https://www.virginamerica.com/';
@@ -15,6 +17,12 @@ var jobs = kue.createQueue({
     }
   }
 });
+
+console.log(fs.existsSync('src/processor-data.js'));
+if (fs.existsSync('src/processor-data.js')) {
+  console.log('Reading post-processor data from processor-data.js');
+  require('./processor-data.js')(processor);
+}
 
 app.route('/snapshots').get(function (req, res, next) {
   console.log('------------');
@@ -32,7 +40,8 @@ app.route('/snapshots').get(function (req, res, next) {
         console.log('No cached copy. Creating new snapshot.');
         extruder.createSnapshot(url).then(function(obj) {
           console.log('Received new snapshot. Responding with it.');
-          res.send(obj.content);
+          res.send(processor.run(req.query.fragment, obj.content, req));
+          // res.send(obj.content);
         });
       } else {
         console.log('Cached copy found. Responding with it.');
@@ -51,7 +60,8 @@ app.route('/snapshots').get(function (req, res, next) {
             };
           });
         }
-        res.send(cache.content);
+        res.send(processor.run(req.query.fragment, cache.content, req));
+        // res.send(cache.content);
       }
     });
   } else {
