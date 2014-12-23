@@ -4,7 +4,6 @@ node_modules
 results
 dist
 docs/html
-lib
 src/scripts/environment.js
 
 npm-debug.log
