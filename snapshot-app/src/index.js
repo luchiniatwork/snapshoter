@@ -41,7 +41,6 @@ app.route('/snapshots').get(function (req, res, next) {
         extruder.createSnapshot(url).then(function(obj) {
           console.log('Received new snapshot. Responding with it.');
           res.send(processor.run(req.query.fragment, obj.content, req));
-          // res.send(obj.content);
         });
       } else {
         console.log('Cached copy found. Responding with it.');
@@ -60,8 +59,9 @@ app.route('/snapshots').get(function (req, res, next) {
             };
           });
         }
+//        console.log(cache.content);
+        console.log(processor.run(req.query.fragment, cache.content, req));
         res.send(processor.run(req.query.fragment, cache.content, req));
-        // res.send(cache.content);
       }
     });
   } else {
