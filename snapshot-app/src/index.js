@@ -29,7 +29,7 @@ app.route('/snapshots').get(function (req, res, next) {
   console.log('Request to', req.path, 'from', req.ip);
   console.log('Parsed query', JSON.stringify(req.query, null, 2));
 
-  if (req.query.fragment) {
+  if (typeof req.query.fragment !== 'undefined') {
     var url = [
       BASE_URL,
       req.query.fragment
@@ -59,8 +59,6 @@ app.route('/snapshots').get(function (req, res, next) {
             };
           });
         }
-//        console.log(cache.content);
-        console.log(processor.run(req.query.fragment, cache.content, req));
         res.send(processor.run(req.query.fragment, cache.content, req));
       }
     });
