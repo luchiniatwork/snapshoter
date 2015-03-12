@@ -11,11 +11,11 @@ function update_meta($, title, description) {
 
 module.exports = function (processor) {
   processor
-    .global(function ($, path, meta) {
-      var $canonicalEl = $('<link rel="canonical" />').attr('href','https://www.virginamerica.com' + path);
+    .global(function ($, uri, meta) {
+      var $canonicalEl = $('<link rel="canonical" />').attr('href','https://www.virginamerica.com' + uri);
       $('head').append($canonicalEl);
     })
-    .when(/^\/book/, function ($, path, meta) {
+    .when(/^\/book/, function ($, uri, meta) {
       var title = 'Book Flights, Hotels, Car Rentals &amp; More | Virgin America';
       var description = [
         'Book your next flight, hotel or vacation package with Virgin America. ',
@@ -24,7 +24,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/flight-check-in/, function ($, path, meta) {
+    .when(/^\/flight-check-in/, function ($, uri, meta) {
       var title = 'Virgin America Online Check In';
       var description = [
         'Save time at the airport by using Virgin America\'s online check in. ',
@@ -33,7 +33,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/manage-itinerary/, function ($, path, meta) {
+    .when(/^\/manage-itinerary/, function ($, uri, meta) {
       var title = 'Manage, View Itinerary &amp; Change Flights | Virgin America';
       var description = [
         'View your travel plans with Virgin America. Review your flight ',
@@ -42,7 +42,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/check-flight-status/, function ($, path, meta) {
+    .when(/^\/check-flight-status/, function ($, uri, meta) {
       var title = 'Check Virgin America Flight Status, Get Updates &amp; More';
       var description = [
         'Use Virgin America\'s notification service to check flight updates, ',
@@ -51,7 +51,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/get-flight-alerts/, function ($, path, meta) {
+    .when(/^\/get-flight-alerts/, function ($, uri, meta) {
       var title = 'Get Virgin America Flight Alerts, Flight Information &amp; More';
       var description = [
         'Join Virgin America\'s flight alerts program &amp; we will notify ',
@@ -60,7 +60,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/elevate-frequent-flyer$/, function ($, path, meta) {
+    .when(/^\/elevate-frequent-flyer$/, function ($, uri, meta) {
       var title = 'Virgin America Elevate Frequent Flyer Program';
       var description = [
         'Welcome to Elevate. Join Virgin America\'s frequent flyer program &amp; ',
@@ -69,7 +69,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/elevate-frequent-flyer\/sign-up/, function ($, path, meta) {
+    .when(/^\/elevate-frequent-flyer\/sign-up/, function ($, uri, meta) {
       var title = 'Join Elevate Frequent Flyer Program | Virgin America';
       var description = [
         'Join Elevate, Virgin America\'s frequent flyer program where you can ',
@@ -78,7 +78,7 @@ module.exports = function (processor) {
       ].join('');
       update_meta($, title, description);
     })
-    .when(/^\/elevate-frequent-flyer\/buy-gift-points/, function ($, path, meta) {
+    .when(/^\/elevate-frequent-flyer\/buy-gift-points/, function ($, uri, meta) {
       var title = 'Buy Points - Elevate Frequent Flyer | Virgin America';
       var description = [
         'Buy Elevate frequent flyer points for your next trip or transfer &amp; ',

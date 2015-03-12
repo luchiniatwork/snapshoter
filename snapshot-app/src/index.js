@@ -29,18 +29,19 @@ app.route('/snapshots').get(function (req, res, next) {
   console.log('Request to', req.path, 'from', req.ip);
   console.log('Parsed query', JSON.stringify(req.query, null, 2));
 
-  if (typeof req.query.fragment !== 'undefined') {
+  if (typeof req.query.uri !== 'undefined') {
     var url = [
       BASE_URL,
-      req.query.fragment
+      req.query.uri
     ].join('');
+    url.replace(/_escaped_fragment_=.*?/, '');
     console.log('Processing', url);
     extruder.getSnapshot(url).then(function(cache) {
       if (!cache) {
         console.log('No cached copy. Creating new snapshot.');
         extruder.createSnapshot(url).then(function(obj) {
           console.log('Received new snapshot. Responding with it.');
-          res.send(processor.run(req.query.fragment, obj.content, req));
+          res.send(processor.run(req.query.uri, obj.content, req));
         });
       } else {
         console.log('Cached copy found. Responding with it.');
@@ -59,7 +60,7 @@ app.route('/snapshots').get(function (req, res, next) {
             };
           });
         }
-        res.send(processor.run(req.query.fragment, cache.content, req));
+        res.send(processor.run(req.query.uri, cache.content, req));
       }
     });
   } else {

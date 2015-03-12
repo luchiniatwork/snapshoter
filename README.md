@@ -118,7 +118,7 @@ Your HTTP must detect this request and encapsulate (not redirect) a request to
 your Snapshoter's HTTP Entrypoint installation (i.e. residing at
 `snapshoter.example.com`):
 
-    http://snapshoter.example.com/snapshots?fragment=book%2Fow%2Fa1%2Fnyc_sfo
+    http://snapshoter.example.com/snapshots?uri=book%2Fow%2Fa1%2Fnyc_sfo
 
 More details about how to set up your domain on the settings section below.
 
@@ -131,7 +131,7 @@ taking snapshots of dynamic websites.
 
 It takes in URLs such as:
 
-    http://snapshoter.example.com/snapshots?fragment=book%2Fow%2Fa1%2Fnyc_sfo
+    http://snapshoter.example.com/snapshots?uri=book%2Fow%2Fa1%2Fnyc_sfo
 
 This entrypoint will check whether there's a cached version of this snapshot,
 if not, it will dynamically generate the snapshot and save it for later use.
@@ -422,7 +422,7 @@ Here is an example of how to configure this using Apache's `mod_redirect`:
     Options +FollowSymLinks
     RewriteCond %{REQUEST_URI}  ^/$
     RewriteCond %{QUERY_STRING} ^_escaped_fragment_=/?(.*)$
-    RewriteRule ^(.*)$ /snapshots/?fragment=%1? [NC,L]
+    RewriteRule ^(.*)$ /snapshots/?uri=%{REQUEST_URI}?%{QUERY_STRING} [NC,L]
 
 Prior to that you may need to enable the appropriate modules:
 
@@ -433,42 +433,13 @@ You may also need to restart Apache:
 
     $ sudo /etc/init.d/apache2 reload
 
-If you are using nginx to serve your webise, you can add some configuration to
-serve Snapshoter's snapshots if there is an `_escaped_fragment_` parameter in
-the query strings.
-
-Unlike Apache, nginx does not require us to enable a module, so you can simply
-update your configuration to replace the path with the question file instead.
-
-In your nginx configuration file (For instance, `/etc/nginx/nginx.conf`),
-ensure your configuration follows this example:
-
-    server {
-      listen 80;
-      server_name example;
-
-      if ($args ~ "_escaped_fragment_=/?(.+)") {
-        set $path $1;
-        rewrite ^ /snapshots/?fragment=$path last;
-      }
-
-      location / {
-        root /web/example/current/;
-        # Comment out if using hash urls
-        if (!-e $request_filename) {
-          rewrite ^(.*)$ /index.html break;
-        }
-        index index.html;
-      }
-    }
-
-Both configurations will rewrite escaped fragment requests such as:
+This configuration will rewrite escaped fragment requests such as:
 
     http://www.example.com/?_escaped_fragment_=book%2Fow%2Fa1%2Fnyc_sfo
 
 to:
 
-    http://www.example.com/snapshots/?fragment=book%2Fow%2Fa1%2Fnyc_sfo
+    http://www.example.com/snapshots/?uri=book%2Fow%2Fa1%2Fnyc_sfo
 
 The only thing left at the HTTP server side is deal with context
 switching/mapping in order to get the `/snapshots` mapped to the port where

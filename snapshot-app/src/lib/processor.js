@@ -5,20 +5,20 @@ var global = null,
 
 module.exports = {
 
-  run: function (path, content, meta) {
-    if (path.substr(0, 1) !== '/') {
-      path = '/' + path;
+  run: function (uri, content, meta) {
+    if (uri.substr(0, 1) !== '/') {
+      uri = '/' + uri;
     }
-    console.log('Post-processing content for', path);
+    console.log('Post-processing content for', uri);
     var $ = cheerio.load(content);
     if (global) {
       console.log('Running global directive');
-      global($, path, meta);
+      global($, uri, meta);
     }
     for(var idx in routes) {
-      if (routes[idx].regex.test(path)) {
+      if (routes[idx].regex.test(uri)) {
         console.log('Running route directive', routes[idx].regex);
-        routes[idx].handler($, path, meta);
+        routes[idx].handler($, uri, meta);
       }
     }
     return $.html();
