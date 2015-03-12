@@ -12,7 +12,8 @@ function update_meta($, title, description) {
 module.exports = function (processor) {
   processor
     .global(function ($, path, meta) {
-      $('link[rel=canonical]').attr('href','https://www.virginamerica.com' + path);
+      var $canonicalEl = $('<link rel="canonical" />').attr('href','https://www.virginamerica.com' + path);
+      $('head').append($canonicalEl);
     })
     .when(/^\/book/, function ($, path, meta) {
       var title = 'Book Flights, Hotels, Car Rentals &amp; More | Virgin America';
