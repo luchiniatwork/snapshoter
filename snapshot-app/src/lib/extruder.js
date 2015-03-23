@@ -41,20 +41,25 @@ module.exports = {
 
         console.log('Processing return for UUID', uuid);
       
-        out.content   = fs.readFileSync(contentPath).toString();
-        out.thumb     = fs.readFileSync(thumbPath).toJSON();
-        out.timestamp = Date.now();
+        if (fs.existsSync(contentPath) && fs.existsSync(thumbPath)) {
+          out.content   = fs.readFileSync(contentPath).toString();
+          out.thumb     = fs.readFileSync(thumbPath).toJSON();
+          out.timestamp = Date.now();
 
-        client.hmset(url,
-          'content', out.content,
-          'thumb', out.thumb,
-          'timestamp', out.timestamp
-        );
+          client.hmset(url,
+            'content', out.content,
+            'thumb', out.thumb,
+            'timestamp', out.timestamp
+          );
       
-        fs.unlinkSync(contentPath);
-        fs.unlinkSync(thumbPath);
-      
-        deferred.resolve(out);
+          fs.unlinkSync(contentPath);
+          fs.unlinkSync(thumbPath);
+          
+          deferred.resolve(out);
+        } else {
+          console.log('Unknown Err on PhantomJS');
+          deferred.reject(new Error('PhantomJS failed'));
+        }
       } else {
         console.log('Err', err);
         console.log('stderr', stderr);

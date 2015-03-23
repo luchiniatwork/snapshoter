@@ -42,6 +42,8 @@ app.route('/snapshots').get(function (req, res, next) {
         extruder.createSnapshot(url).then(function(obj) {
           console.log('Received new snapshot. Responding with it.');
           res.send(processor.run(req.query.uri, obj.content, req));
+        }, function(error) {
+          res.status(400).send('Bad Request');
         });
       } else {
         console.log('Cached copy found. Responding with it.');
@@ -62,6 +64,8 @@ app.route('/snapshots').get(function (req, res, next) {
         }
         res.send(processor.run(req.query.uri, cache.content, req));
       }
+    }, function(error) {
+      res.status(400).send('Bad Request');
     });
   } else {
     res.status(400).send('Bad Request');
